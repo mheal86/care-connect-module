@@ -1,0 +1,1620 @@
+<div class="care-shell" [class.care-alt]="alternative">
+  <a class="skip-link" href="#care-main">{{ 'CARE.SKIP' | translate }}</a>
+  <header class="care-topbar">
+    <a class="care-brand" [routerLink]="basePath"
+      ><img [src]="brandIcon" alt="" width="36" height="36" /><strong>{{
+        'CARE.BRAND' | translate
+      }}</strong></a
+    >
+    <span class="topbar-title">{{ 'CARE.MODULE' | translate }}</span>
+    <div class="topbar-actions">
+      <span class="prototype-label"
+        ><i class="pi pi-pencil" aria-hidden="true"></i>{{ (store.fixture ? 'CARE.PROTOTYPE' : 'CARE.TEST_ENV') | translate }}</span
+      ><p-button
+        [label]="'CARE.LANGUAGE' | translate"
+        [ariaLabel]="'CARE.LANGUAGE' | translate"
+        icon="pi pi-globe"
+        [text]="true"
+        (onClick)="switchLanguage()"
+      />
+    </div>
+  </header>
+  <aside class="care-sidebar">
+    <div class="sidebar-intro">
+      <span class="family-symbol"><i [class]="isStaffOnly() ? 'pi pi-building' : 'pi pi-heart'" aria-hidden="true"></i></span>
+      <div>
+        <strong>{{ (isStaffOnly() ? 'CARE.FACILITY_ROLES' : 'CARE.FAMILY_SPACE') | translate }}</strong
+        ><span>{{ isStaffOnly() ? facilityNameById(store.memberIds()[0] || 'an-nhien') : ('CARE.FAMILY_SUBTITLE' | translate) }}</span>
+      </div>
+    </div>
+    <nav [attr.aria-label]="'CARE.NAVIGATION' | translate">
+      @for (item of visibleNavItems(); track item.key) {
+        @if (item.key === 'INBOX') {
+          <p class="nav-group-label">{{ (store.fixture ? 'CARE.DEMO_ROLES' : 'CARE.FACILITY_ROLES') | translate }}</p>
+        }
+        <a
+          [routerLink]="item.path"
+          [class.active]="activeNav(item.key)"
+          [attr.aria-current]="activeNav(item.key) ? 'page' : 'false'"
+          ><i [class]="item.icon" aria-hidden="true"></i
+          ><span>{{ 'CARE.' + item.key | translate }}</span>
+          @if (item.key === 'MY_REQUESTS') {
+            <span class="nav-count">{{ store.requests().length }}</span>
+          }
+        </a>
+      }
+    </nav>
+    <div class="sidebar-footer">
+      <i class="pi pi-shield" aria-hidden="true"></i>
+      <p>{{ 'CARE.PRIVACY_SHORT' | translate }}</p>
+      <a [routerLink]="basePath"
+        ><i class="pi pi-arrow-left" aria-hidden="true"></i>{{ 'CARE.BACK_APP' | translate }}</a
+      >
+    </div>
+  </aside>
+  <main id="care-main" class="care-main">
+    <div class="workspace" [class.discovery-workspace]="alternative && view === 'facilities'">
+      @if (store.error()) {
+        <div class="error-banner" role="alert">{{ 'CARE.' + store.error() | translate }}
+          <p-button [label]="'CARE.RETRY' | translate" (onClick)="store.load(staff || view === 'inbox' ? 'inbox' : 'mine')" />
+        </div>
+      }
+      @if (feedback()) {
+        <div class="success-banner" role="status">
+          <i class="pi pi-check-circle" aria-hidden="true"></i
+          >{{ 'CARE.' + feedback() | translate }}
+        </div>
+      }
+
+      @if (view === 'extensions') { <app-care-extension-panel /> }
+      @if (view === 'facilities') {
+        <header class="page-heading">
+          <div>
+            <h1 tabindex="-1">{{ (alternative ? 'CARE_ALT.TITLE' : 'CARE.FIND_TITLE') | translate }}</h1>
+            <p>{{ (alternative ? 'CARE_ALT.SUBTITLE' : 'CARE.FIND_SUBTITLE') | translate }}</p>
+          </div>
+          <a class="text-link" [routerLink]="basePath + (isStaffOnly() ? '/inbox' : '/requests')"
+            >{{ (isStaffOnly() ? 'CARE.INBOX' : 'CARE.MY_REQUESTS') | translate
+            }}<i class="pi pi-arrow-up-right" aria-hidden="true"></i
+          ></a>
+        </header>
+        <ol class="journey-strip">
+          <li>
+            <span>1</span>
+            <div>
+              <strong>{{ 'CARE.JOURNEY.FIND' | translate }}</strong
+              ><small>{{ 'CARE.JOURNEY.FIND_DESC' | translate }}</small>
+            </div>
+          </li>
+          <li>
+            <span>2</span>
+            <div>
+              <strong>{{ 'CARE.JOURNEY.READ' | translate }}</strong
+              ><small>{{ 'CARE.JOURNEY.READ_DESC' | translate }}</small>
+            </div>
+          </li>
+          <li>
+            <span>3</span>
+            <div>
+              <strong>{{ 'CARE.JOURNEY.SEND' | translate }}</strong
+              ><small>{{ 'CARE.JOURNEY.SEND_DESC' | translate }}</small>
+            </div>
+          </li>
+        </ol>
+        <form class="search-panel" (ngSubmit)="applyFilters()">
+          @if (alternative) { <h2 class="filter-title">{{ 'CARE_ALT.FILTER_TITLE' | translate }}</h2><p class="filter-intro">{{ 'CARE_ALT.FILTER_HELP' | translate }}</p> }
+          <div class="search-query">
+            <label for="facility-query">{{ 'CARE.SEARCH' | translate }}</label>
+            <div class="input-icon">
+              <i class="pi pi-search" aria-hidden="true"></i
+              ><input
+                id="facility-query"
+                pInputText
+                name="query"
+                [(ngModel)]="draftFilters.q"
+                [placeholder]="'CARE.SEARCH_PLACEHOLDER' | translate"
+              />
+            </div>
+          </div>
+          <div class="filter-grid">
+            <div class="field">
+              <label for="region">{{ 'CARE.REGION_LABEL' | translate }}</label
+              ><p-select
+                appendTo="body"
+                inputId="region"
+                [ariaLabel]="'CARE.REGION_LABEL' | translate"
+                name="region"
+                [options]="regionOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="draftFilters.region"
+              />
+            </div>
+            <div class="field">
+              <label for="type">{{ 'CARE.TYPE_LABEL' | translate }}</label
+              ><p-select
+                appendTo="body"
+                inputId="type"
+                [ariaLabel]="'CARE.TYPE_LABEL' | translate"
+                name="type"
+                [options]="typeOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="draftFilters.type"
+              />
+            </div>
+            <div class="field">
+              <label for="service-filter">{{ 'CARE.SERVICE_LABEL' | translate }}</label
+              ><p-select
+                appendTo="body"
+                inputId="service-filter"
+                [ariaLabel]="'CARE.SERVICE_LABEL' | translate"
+                name="service"
+                [options]="serviceOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="draftFilters.service"
+              />
+            </div>
+            <p-button
+              type="submit"
+              icon="pi pi-search"
+              [label]="'CARE.SEARCH_BUTTON' | translate"
+              [ariaLabel]="'CARE.SEARCH_BUTTON' | translate"
+              styleClass="care-primary"
+            />
+          </div>
+        </form>
+        <div class="results-heading">
+          <h2>
+            {{ state() === 'empty' ? 0 : matchingFacilities().length }}
+            {{ 'CARE.RESULTS' | translate }}
+          </h2>
+          <div class="results-actions">
+            <p-button
+              [label]="'CARE.RECOMMEND.OPEN_BTN' | translate"
+              [ariaLabel]="'CARE.RECOMMEND.OPEN_BTN' | translate"
+              icon="pi pi-sparkles"
+              [outlined]="true"
+              (onClick)="openRecommend()"
+            />
+            <p-button
+              [label]="(showMap() ? 'CARE.MAP.HIDE_BTN' : 'CARE.MAP.SHOW_BTN') | translate"
+              [ariaLabel]="(showMap() ? 'CARE.MAP.HIDE_BTN' : 'CARE.MAP.SHOW_BTN') | translate"
+              icon="pi pi-map"
+              [outlined]="true"
+              (onClick)="toggleMap()"
+            />
+            @if (store.comparedFacilities().length > 0) {
+              <p-button
+                [label]="('CARE.COMPARE.OPEN_BTN' | translate) + ' (' + store.comparedFacilities().length + '/3)'"
+                [ariaLabel]="'CARE.COMPARE.OPEN_BTN' | translate"
+                icon="pi pi-sliders-h"
+                styleClass="care-primary"
+                (onClick)="compareOpen = true"
+              />
+            }
+            <p-button
+              [label]="'CARE.CLEAR_FILTERS' | translate"
+              [ariaLabel]="'CARE.CLEAR_FILTERS' | translate"
+              icon="pi pi-filter-slash"
+              [text]="true"
+              (onClick)="resetFilters()"
+            />
+          </div>
+        </div>
+        @if (showMap()) {
+          <app-care-facility-map
+            [facilities]="matchingFacilities()"
+            [basePath]="basePath"
+          />
+        }
+        @if (state() === 'loading' || store.loading()) {
+          <div class="facility-grid" aria-busy="true">
+            <p class="sr-only" role="status">{{ 'CARE.LOADING' | translate }}</p>
+            @for (item of [1, 2, 3, 4]; track item) {
+              <div class="facility-skeleton">
+                <p-skeleton width="60%" height="1.75rem" /><p-skeleton height="5rem" /><p-skeleton
+                  width="40%"
+                />
+              </div>
+            }
+          </div>
+        } @else if (state() === 'error') {
+          <div class="empty-state" role="alert">
+            <i class="pi pi-wifi" aria-hidden="true"></i>
+            <h2>{{ 'CARE.CONNECTION_ERROR' | translate }}</h2>
+            <p>{{ 'CARE.CONNECTION_HELP' | translate }}</p>
+            <p-button
+              [label]="'CARE.RETRY' | translate"
+              [ariaLabel]="'CARE.RETRY' | translate"
+              (onClick)="changeState('ready')"
+            />
+          </div>
+        } @else if (!visibleFacilities().length) {
+          <div class="empty-state">
+            <i class="pi pi-search" aria-hidden="true"></i>
+            <h2>{{ 'CARE.EMPTY_FACILITIES' | translate }}</h2>
+            <p>{{ 'CARE.EMPTY_FACILITIES_HELP' | translate }}</p>
+            <p-button
+              [label]="'CARE.CLEAR_FILTERS' | translate"
+              [ariaLabel]="'CARE.CLEAR_FILTERS' | translate"
+              (onClick)="resetFilters()"
+            />
+          </div>
+        } @else {
+          <div class="facility-grid">
+            @for (item of visibleFacilities(); track item.id) {
+              <article class="facility-card">
+                @if (alternative) { <div class="facility-mark" aria-hidden="true"><i [class]="item.type === 'health' ? 'pi pi-heart' : 'pi pi-building'"></i></div> }
+                <h3>
+                  <a
+                    [routerLink]="[basePath + '/facilities', item.id]"
+                    [queryParams]="filters()"
+                    >{{ facilityName(item) }}</a
+                  >
+                </h3>
+                <div class="facility-card-top">
+                  <span class="facility-symbol" [class.health]="item.type === 'health'"
+                    ><i
+                      [class]="item.type === 'health' ? 'pi pi-heart' : 'pi pi-building'"
+                      aria-hidden="true"
+                    ></i></span
+                  ><span class="type-label">{{ 'CARE.TYPE.' + item.type | translate }}</span
+                  ><span class="accepting"
+                    ><span></span
+                    >{{
+                      (isReceiving(item) ? 'CARE.RECEIVING' : 'CARE.SERVICE_PAUSED') | translate
+                    }}</span
+                  >
+                </div>
+
+                <p class="location">
+                  <i class="pi pi-map-marker" aria-hidden="true"></i>{{ address(item) }}
+                </p>
+                <p class="facility-description">{{ description(item) }}</p>
+                <div class="service-tags">
+                  @for (service of item.services; track service.id) {
+                    <span [class.inactive]="!service.accepting">{{
+                      'CARE.SERVICE.' + service.id | translate
+                    }}</span>
+                  }
+                </div>
+                <div class="facility-card-bottom">
+                  <div>
+                    <small>{{ 'CARE.REFERENCE_FROM' | translate }} · {{ 'CARE.SERVICE.' + referenceService(item).id | translate }}</small
+                    ><strong
+                      >{{ price(referenceService(item).price)
+                      }}<small>
+                        @if (referenceService(item).price > 0) { / {{ 'CARE.UNIT.' + referenceService(item).unit | translate }} }</small
+                      ></strong
+                    >
+                  </div>
+                  <div class="facility-card-actions">
+                    <button
+                      type="button"
+                      class="outline-link compare-toggle-btn"
+                      [attr.aria-pressed]="isCompared(item.id)"
+                      (click)="toggleCompare(item.id)"
+                    >
+                      <i [class]="isCompared(item.id) ? 'pi pi-check-square' : 'pi pi-plus-circle'" aria-hidden="true"></i>
+                      {{ (isCompared(item.id) ? 'CARE.COMPARE.SELECTED' : 'CARE.COMPARE.ADD') | translate }}
+                    </button>
+                    <a
+                      class="outline-link"
+                      [routerLink]="[basePath + '/facilities', item.id]"
+                      [queryParams]="filters()"
+                      >{{ 'CARE.VIEW_DETAIL' | translate
+                      }}<i class="pi pi-arrow-right" aria-hidden="true"></i
+                    ></a>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+          <nav class="pagination" [attr.aria-label]="'CARE.PAGINATION' | translate">
+            <p-button
+              icon="pi pi-chevron-left"
+              [ariaLabel]="'CARE.PREVIOUS' | translate"
+              [text]="true"
+              [disabled]="page() <= 1"
+              (onClick)="changePage(page() - 1)"
+            /><span>{{ 'CARE.PAGE' | translate }} {{ page() }} / {{ totalPages() }}</span
+            ><p-button
+              icon="pi pi-chevron-right"
+              [ariaLabel]="'CARE.NEXT' | translate"
+              [text]="true"
+              [disabled]="page() >= totalPages()"
+              (onClick)="changePage(page() + 1)"
+            />
+          </nav>
+        }
+        <div class="quiet-help">
+          <i class="pi pi-info-circle" aria-hidden="true"></i>
+          <p>{{ 'CARE.PRICE_NOTE' | translate }}</p>
+        </div>
+      }
+
+      @if (view === 'facility' || view === 'consult') {
+        @if (state() === 'loading' || store.loading()) {
+          <div class="content-panel" aria-busy="true">
+            <p role="status">{{ 'CARE.LOADING' | translate }}</p>
+            <p-skeleton height="12rem" />
+          </div>
+        } @else if (facility(); as item) {
+          @if (item.published) {
+            <a
+              class="back-link"
+              [routerLink]="
+                view === 'consult' ? [basePath + '/facilities', item.id] : [basePath]
+              "
+              [queryParams]="filters()"
+              ><i class="pi pi-arrow-left" aria-hidden="true"></i
+              >{{
+                (view === 'consult' ? 'CARE.BACK_FACILITY' : 'CARE.BACK_RESULTS') | translate
+              }}</a
+            >
+            @if (view === 'facility') {
+              <header class="page-heading detail-heading">
+                <div>
+                  <h1 tabindex="-1">{{ facilityName(item) }}</h1>
+                  <p class="type-label">{{ 'CARE.TYPE.' + item.type | translate }}</p>
+                  <p><i class="pi pi-map-marker" aria-hidden="true"></i>{{ address(item) }}</p>
+                </div>
+                <span class="accepting"
+                  ><span></span
+                  >{{
+                    (isReceiving(item) ? 'CARE.RECEIVING' : 'CARE.SERVICE_PAUSED') | translate
+                  }}</span
+                >
+              </header>
+              <div class="detail-layout">
+                <div class="detail-content">
+                  <section class="content-panel">
+                    <h2>{{ 'CARE.ABOUT' | translate }}</h2>
+                    <p>{{ description(item) }}</p>
+                    <div class="amenities">
+                      @for (amenity of item.amenities; track amenity) {
+                        <span
+                          ><i class="pi pi-check-circle" aria-hidden="true"></i
+                          >{{ 'CARE.AMENITY.' + amenity | translate }}</span
+                        >
+                      }
+                    </div>
+                  </section>
+                  <section class="content-panel">
+                    <h2>{{ 'CARE.SERVICES_TITLE' | translate }}</h2>
+                    <p class="muted">{{ 'CARE.SERVICE_PRICE_NOTE' | translate }}</p>
+                    <div class="services-list">
+                      @for (service of item.services; track service.id) {
+                        <article class="service-row">
+                          <div>
+                            <h3>{{ 'CARE.SERVICE.' + service.id | translate }}</h3>
+                            <p>{{ 'CARE.SERVICE_DESC.' + service.id | translate }}</p>
+                            <strong class="price"
+                              >{{ price(service.price) }}
+                              @if (service.price > 0) { <span>/ {{ 'CARE.UNIT.' + service.unit | translate }}</span> }</strong
+                            >
+                          </div>
+                          <div class="service-action">
+                            @if (service.accepting && !isStaffOnly()) {
+                              <a
+                                class="primary-link"
+                                [routerLink]="[basePath + '/facilities', item.id, 'consult']"
+                                [queryParams]="consultQuery(service.id)"
+                                >{{ 'CARE.REQUEST_CONSULT' | translate
+                                }}<i class="pi pi-arrow-right" aria-hidden="true"></i
+                              ></a>
+                            } @else if (service.accepting) {
+                              <span class="muted">{{ 'CARE.RECEIVING' | translate }}</span>
+                            } @else {
+                              <span class="muted">{{ 'CARE.SERVICE_PAUSED' | translate }}</span>
+                            }
+                          </div>
+                        </article>
+                      }
+                    </div>
+                  </section>
+                  <section class="content-panel">
+                    <h2>{{ 'CARE.ADMISSION' | translate }}</h2>
+                    <p>{{ 'CARE.ADMISSION_NOTE' | translate }}</p>
+                  </section>
+                  <section class="content-panel">
+                    <h2>{{ 'CARE.FEEDBACK.SECTION_TITLE' | translate }}</h2>
+                    <p class="muted">{{ 'CARE.FEEDBACK.SECTION_NOTE' | translate }}</p>
+                    @if (facilityFeedback().length === 0) {
+                      <p class="field-help">{{ 'CARE.FEEDBACK.EMPTY' | translate }}</p>
+                    } @else {
+                      <div class="feedback-list">
+                        @for (fb of facilityFeedback(); track fb.id) {
+                          <article class="feedback-item">
+                            <div class="feedback-item-head">
+                              <strong>{{ fb.rating }} / 5 ★</strong>
+                              <small>{{ date(fb.createdAt, false) }}</small>
+                            </div>
+                            @if (fb.tags.length > 0) {
+                              <div class="service-tags">
+                                @for (tag of fb.tags; track tag) {
+                                  <span>{{ 'CARE.FEEDBACK.TAG_' + tag | translate }}</span>
+                                }
+                              </div>
+                            }
+                            @if (fb.comment) {
+                              <p>{{ fb.comment }}</p>
+                            }
+                          </article>
+                        }
+                      </div>
+                    }
+                  </section>
+                </div>
+                <aside class="detail-aside">
+                  <section id="facility-contact" class="content-panel contact-panel">
+                    <h2>{{ 'CARE.CONTACT' | translate }}</h2>
+                    <dl>
+                      <dt>{{ 'CARE.ADDRESS_LABEL' | translate }}</dt>
+                      <dd>{{ address(item) }}</dd>
+                      <dt>{{ 'CARE.PHONE' | translate }}</dt>
+                      <dd>{{ item.contact || ('CARE.NOT_PUBLISHED' | translate) }}</dd>
+                      <dt>{{ 'CARE.CONSULT_HOURS' | translate }}</dt>
+                      <dd>{{ 'CARE.HOURS_VALUE' | translate }}</dd>
+                      <dt>{{ 'CARE.LAST_UPDATED' | translate }}</dt>
+                      <dd>{{ date(item.updatedAt, false) }}</dd>
+                    </dl>
+                    <p class="contact-note">{{ 'CARE.CONTACT_NOTE' | translate }}</p>
+                  </section>
+                  <div class="aside-note">
+                    <i class="pi pi-shield" aria-hidden="true"></i>
+                    <h3>{{ 'CARE.YOU_CHOOSE' | translate }}</h3>
+                    <p>{{ 'CARE.YOU_CHOOSE_DESC' | translate }}</p>
+                  </div>
+                </aside>
+              </div>
+            } @else if (isReceiving(item)) {
+              <header class="page-heading">
+                <div>
+                  <h1 tabindex="-1">
+                    {{ (review() ? 'CARE.REVIEW_TITLE' : 'CARE.CONSULT_TITLE') | translate }}
+                  </h1>
+                  <p>
+                    {{ facilityName(item) }} <span class="dot-divider">·</span>
+                    {{ 'CARE.TIMEZONE' | translate }}
+                  </p>
+                </div>
+              </header>
+              <ol class="form-steps">
+                <li [class.current]="!review()">
+                  <span>1</span>{{ 'CARE.STEP_DETAILS' | translate }}
+                </li>
+                <li [class.current]="review()">
+                  <span>2</span>{{ 'CARE.STEP_REVIEW' | translate }}
+                </li>
+              </ol>
+              @if (formError()) {
+                <div class="error-banner" role="alert">
+                  {{ 'CARE.ERROR.' + formError() | translate }}
+                </div>
+              }
+              <form
+                [formGroup]="form"
+                (ngSubmit)="review() ? submit() : nextStep()"
+                class="detail-layout form-layout"
+                novalidate
+              >
+                <div class="content-panel consultation-panel">
+                  @if (!review()) {
+                    <h2>{{ 'CARE.PERSON_SECTION' | translate }}</h2>
+                    <div class="field">
+                      <label for="profile">{{ 'CARE.PROFILE_LABEL' | translate }} *</label
+                      ><p-select
+                        appendTo="body"
+                        inputId="profile"
+                        [ariaLabel]="'CARE.PROFILE_LABEL' | translate"
+                        formControlName="profile"
+                        [options]="profileOptions()"
+                        optionLabel="label"
+                        optionValue="value"
+                      />
+                    </div>
+                    <p class="field-help">{{ 'CARE.PROFILE_HELP' | translate }}</p>
+                    <h2>{{ 'CARE.NEEDS_SECTION' | translate }}</h2>
+                    <div class="field">
+                      <label for="consult-service">{{ 'CARE.SERVICE_LABEL' | translate }} *</label
+                      ><p-select
+                        appendTo="body"
+                        inputId="consult-service"
+                        [ariaLabel]="'CARE.SERVICE_LABEL' | translate"
+                        [invalid]="error('service')"
+                        formControlName="service"
+                        [options]="availableServices()"
+                        optionLabel="label"
+                        optionValue="value"
+                      />
+                      @if (error('service')) { <small class="field-error">{{ 'CARE.ERROR.UNAVAILABLE' | translate }}</small> }
+                    </div>
+                    <div class="field">
+                      <label for="needs">{{ 'CARE.NEEDS_LABEL' | translate }} *</label
+                      ><textarea
+                        id="needs"
+                        formControlName="needs"
+                        rows="4"
+                        maxlength="1000"
+                        [placeholder]="'CARE.NEEDS_PLACEHOLDER' | translate"
+                        [attr.aria-invalid]="error('needs')"
+                        aria-describedby="needs-help"
+                      ></textarea>
+                      <div class="field-meta">
+                        <small id="needs-help" [class.field-error]="error('needs')">{{
+                          (error('needs') ? 'CARE.ERROR.NEEDS' : 'CARE.NEEDS_HELP') | translate
+                        }}</small
+                        ><small>{{ form.controls.needs.value.length }}/1000</small>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="preferred-time">{{ 'CARE.PREFERRED_TIME' | translate }} *</label
+                      ><input
+                        id="preferred-time"
+                        type="datetime-local"
+                        pInputText
+                        formControlName="time"
+                        [min]="minimumDate"
+                        [attr.aria-invalid]="error('time')"
+                        aria-describedby="time-help"
+                      /><small id="time-help" [class.field-error]="error('time')">{{
+                        (error('time') ? 'CARE.ERROR.FUTURE' : 'CARE.TIME_HELP') | translate
+                      }}</small>
+                    </div>
+                    @if (facilitySlots().length > 0) {
+                      <div class="field">
+                        <label>{{ 'CARE.SLOTS.TITLE' | translate }}</label>
+                        <div class="slot-grid" role="group" [attr.aria-label]="'CARE.SLOTS.TITLE' | translate">
+                          @for (slot of facilitySlots(); track slot.id) {
+                            <button
+                              type="button"
+                              class="slot-chip"
+                              [class.slot-chip-selected]="selectedSlotId() === slot.id"
+                              [disabled]="slot.bookedCount >= slot.capacity"
+                              (click)="selectSlot(slot)"
+                            >
+                              <strong>{{ date(slot.startsAt) }}</strong>
+                              <small>
+                                {{
+                                  slot.bookedCount >= slot.capacity
+                                    ? ('CARE.SLOTS.FULL' | translate)
+                                    : (slot.capacity - slot.bookedCount) + ' / ' + slot.capacity + ' ' + ('CARE.SLOTS.AVAILABLE' | translate)
+                                }}
+                              </small>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        [ngModel]="reminderOptIn()"
+                        (ngModelChange)="reminderOptIn.set($event)"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                      <span>{{ 'CARE.REMINDER.OPT_IN' | translate }}</span>
+                    </label>
+                    <h2>{{ 'CARE.CONTACT_SECTION' | translate }}</h2>
+                    <div class="two-fields">
+                      <div class="field">
+                        <label for="contact-name">{{ 'CARE.CONTACT_NAME' | translate }} *</label
+                        ><input
+                          id="contact-name"
+                          pInputText
+                          formControlName="contactName"
+                          autocomplete="name"
+                          maxlength="100"
+                          [attr.aria-invalid]="error('contactName')"
+                          aria-describedby="name-error"
+                        />
+                        @if (error('contactName')) {
+                          <small id="name-error" class="field-error">{{
+                            'CARE.ERROR.NAME' | translate
+                          }}</small>
+                        }
+                      </div>
+                      <div class="field">
+                        <label for="phone">{{ 'CARE.PHONE' | translate }} *</label
+                        ><input
+                          id="phone"
+                          type="tel"
+                          pInputText
+                          formControlName="phone"
+                          autocomplete="tel"
+                          [attr.aria-invalid]="error('phone')"
+                          aria-describedby="phone-error"
+                        />
+                        @if (error('phone')) {
+                          <small id="phone-error" class="field-error">{{
+                            'CARE.ERROR.PHONE' | translate
+                          }}</small>
+                        }
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="note">{{ 'CARE.NOTE' | translate }}</label
+                      ><textarea
+                        id="note"
+                        formControlName="note"
+                        rows="2"
+                        maxlength="1000"
+                      ></textarea
+                      ><small>{{ 'CARE.NOTE_HELP' | translate }}</small>
+                    </div>
+                  } @else {
+                    <h2>{{ 'CARE.SHARE_SUMMARY' | translate }}</h2>
+                    <p class="muted">{{ 'CARE.SHARE_SUMMARY_DESC' | translate }}</p>
+                    <dl class="review-list">
+                      <dt>{{ 'CARE.PROFILE_LABEL' | translate }}</dt>
+                      <dd>{{ profileName(form.controls.profile.value) }}</dd>
+                      <dt>{{ 'CARE.FACILITY_LABEL' | translate }}</dt>
+                      <dd>{{ facilityName(item) }}</dd>
+                      <dt>{{ 'CARE.SERVICE_LABEL' | translate }}</dt>
+                      <dd>{{ 'CARE.SERVICE.' + form.controls.service.value | translate }}</dd>
+                      <dt>{{ 'CARE.PREFERRED_TIME' | translate }}</dt>
+                      <dd>{{ date(form.controls.time.value + ':00+07:00') }}</dd>
+                      <dt>{{ 'CARE.NEEDS_LABEL' | translate }}</dt>
+                      <dd class="preserve-text">{{ form.controls.needs.value }}</dd>
+                      <dt>{{ 'CARE.CONTACT_SECTION' | translate }}</dt>
+                      <dd>
+                        {{ form.controls.contactName.value }}<br />{{ form.controls.phone.value }}
+                      </dd>
+                      @if (form.controls.note.value) {
+                        <dt>{{ 'CARE.NOTE' | translate }}</dt>
+                        <dd class="preserve-text">{{ form.controls.note.value }}</dd>
+                      }
+                    </dl>
+                    <label class="consent-label"
+                      ><input
+                        type="checkbox"
+                        formControlName="consent"
+                        [attr.aria-invalid]="error('consent')"
+                        aria-describedby="consent-help"
+                      /><span
+                        >{{ 'CARE.CONSENT' | translate }} <strong>{{ facilityName(item) }}</strong
+                        >.</span
+                      ></label
+                    ><small id="consent-help" [class.field-error]="error('consent')">{{
+                      (error('consent') ? 'CARE.ERROR.CONSENT' : 'CARE.CONSENT_HELP') | translate
+                    }}</small>
+                  }
+                  <div class="form-footer">
+                    @if (review()) {
+                      <p-button
+                        [label]="'CARE.EDIT_DETAILS' | translate"
+                        [ariaLabel]="'CARE.EDIT_DETAILS' | translate"
+                        icon="pi pi-arrow-left"
+                        [text]="true"
+                        (onClick)="editDetails()"
+                      />
+                    } @else {
+                      <span class="required-note">{{ 'CARE.REQUIRED_NOTE' | translate }}</span>
+                    }
+                    <p-button
+                      type="submit"
+                      [label]="(review() ? 'CARE.SEND_REQUEST' : 'CARE.CONTINUE') | translate"
+                      [ariaLabel]="(review() ? 'CARE.SEND_REQUEST' : 'CARE.CONTINUE') | translate"
+                      [icon]="review() ? 'pi pi-send' : 'pi pi-arrow-right'"
+                      iconPos="right"
+                      [loading]="sending()"
+                      [disabled]="sending()"
+                      styleClass="care-primary"
+                    />
+                  </div>
+                </div>
+                <aside class="detail-aside">
+                  <section class="aside-note">
+                    <i class="pi pi-heart" aria-hidden="true"></i>
+                    <h2>{{ 'CARE.NEXT_WHAT' | translate }}</h2>
+                    <ol class="next-steps">
+                      <li>{{ 'CARE.NEXT_1' | translate }}</li>
+                      <li>{{ 'CARE.NEXT_2' | translate }}</li>
+                      <li>{{ 'CARE.NEXT_3' | translate }}</li>
+                    </ol>
+                    <p>{{ 'CARE.NO_MEDICAL_RECORD' | translate }}</p>
+                  </section>
+                </aside>
+              </form>
+            } @else {
+              <div class="empty-state">
+                <h1 tabindex="-1">{{ 'CARE.SERVICE_PAUSED' | translate }}</h1>
+                <p>{{ 'CARE.PAUSED_HELP' | translate }}</p>
+                <a class="primary-link" [routerLink]="[basePath + '/facilities', item.id]">{{ 'CARE.BACK_FACILITY' | translate }}</a>
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <i class="pi pi-building" aria-hidden="true"></i>
+              <h1 tabindex="-1">{{ 'CARE.UNPUBLISHED' | translate }}</h1>
+              <p>{{ 'CARE.UNPUBLISHED_HELP' | translate }}</p>
+              <a class="primary-link" [routerLink]="basePath">{{ 'CARE.FIND' | translate }}</a>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">
+            <h1 tabindex="-1">{{ 'CARE.NOT_FOUND' | translate }}</h1>
+            <a class="primary-link" [routerLink]="basePath">{{ 'CARE.FIND' | translate }}</a>
+          </div>
+        }
+      }
+
+      @if (view === 'requests' || view === 'inbox') {
+        <header class="page-heading">
+          <div>
+            <h1 tabindex="-1">
+              {{ (view === 'inbox' ? 'CARE.INBOX' : 'CARE.MY_REQUESTS') | translate }}
+            </h1>
+            <p>
+              {{
+                (view === 'inbox' ? 'CARE.INBOX_SUBTITLE' : 'CARE.REQUESTS_SUBTITLE') | translate
+              }}
+            </p>
+          </div>
+          @if (view === 'requests') {
+            <a class="primary-link" [routerLink]="basePath"
+              ><i class="pi pi-plus" aria-hidden="true"></i>{{ 'CARE.NEW_REQUEST' | translate }}</a
+            >
+          }
+        </header>
+        @if (view === 'inbox') {
+          <div class="scope-note">
+            <i class="pi pi-building" aria-hidden="true"></i>
+            <div>
+              <strong>{{ facilityNameById(store.memberIds()[0] || 'an-nhien') }}</strong
+              ><span>{{ 'CARE.STAFF_SCOPE' | translate }}</span>
+            </div>
+          </div>
+        }
+        <div class="request-toolbar">
+          <div class="field">
+            <label for="request-status">{{ 'CARE.STATUS_LABEL' | translate }}</label
+            ><p-select
+              appendTo="body"
+              inputId="request-status"
+              [ariaLabel]="'CARE.STATUS_LABEL' | translate"
+              [options]="statusOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="status()"
+              (ngModelChange)="filterRequests($event)"
+            />
+          </div>
+          <form class="request-search" (ngSubmit)="filterRequests(status())">
+            <label for="request-search">{{ 'CARE.SEARCH_REQUEST' | translate }}</label>
+            <div class="input-icon">
+              <i class="pi pi-search" aria-hidden="true"></i
+              ><input
+                id="request-search"
+                pInputText
+                [ngModel]="requestQuery()"
+                (ngModelChange)="requestQuery.set($event)"
+                name="requestQuery"
+                [placeholder]="'CARE.REQUEST_QUERY_PLACEHOLDER' | translate"
+              /><p-button
+                type="submit"
+                icon="pi pi-arrow-right"
+                [text]="true"
+                [ariaLabel]="'CARE.SEARCH_BUTTON' | translate"
+              />
+            </div>
+          </form>
+          <span class="muted"
+            >{{ matchingRequests().length }} {{ 'CARE.REQUEST_COUNT' | translate }}</span
+          >
+        </div>
+        @if (state() === 'loading' || store.loading()) {
+          <div class="content-panel" aria-busy="true">
+            <p role="status">{{ 'CARE.LOADING' | translate }}</p>
+            <p-skeleton height="12rem" />
+          </div>
+        } @else if (state() === 'error') {
+          <div class="empty-state" role="alert">
+            <h2>{{ 'CARE.CONNECTION_ERROR' | translate }}</h2>
+            <p-button
+              [label]="'CARE.RETRY' | translate"
+              [ariaLabel]="'CARE.RETRY' | translate"
+              (onClick)="changeState('ready')"
+            />
+          </div>
+        } @else if (!visibleRequests().length) {
+          <div class="empty-state">
+            <i class="pi pi-inbox" aria-hidden="true"></i>
+            <h2>{{ 'CARE.EMPTY_REQUESTS' | translate }}</h2>
+            <p>{{ 'CARE.EMPTY_REQUESTS_HELP' | translate }}</p>
+            <p-button
+              [label]="'CARE.CLEAR_FILTERS' | translate"
+              [ariaLabel]="'CARE.CLEAR_FILTERS' | translate"
+              (onClick)="requestQuery.set(''); filterRequests('')"
+            />
+          </div>
+        } @else {
+          <div class="request-list">
+            @for (item of visibleRequests(); track item.id) {
+              <a
+                class="request-row"
+                [routerLink]="[
+                  view === 'inbox' ? basePath + '/inbox' : basePath + '/requests',
+                  item.id,
+                ]"
+                ><div class="request-identity">
+                  <span class="request-code">{{ item.id }}</span>
+                  <h2>{{ facilityNameById(item.facilityId) }}</h2>
+                  <p>
+                    {{ 'CARE.SERVICE.' + item.serviceId | translate
+                    }}<span class="dot-divider">·</span
+                    >{{ item.profileLabel || profileName(item.profile) }}
+                  </p>
+                </div>
+                <div class="request-schedule">
+                  <small>{{
+                    (item.confirmedTime
+                      ? 'CARE.CONFIRMED_TIME'
+                      : item.proposedTime
+                        ? 'CARE.PROPOSED_TIME'
+                        : 'CARE.PREFERRED_TIME'
+                    ) | translate
+                  }}</small
+                  ><strong>{{ date(selectedTime(item)) }}</strong
+                  ><span>{{ 'CARE.TIMEZONE_SHORT' | translate }}</span>
+                </div>
+                <div class="request-state">
+                  <span [class]="'status-badge status-' + item.status.toLowerCase()">{{
+                    statusKey(item.status) | translate
+                  }}</span
+                  ><small
+                    >{{ 'CARE.UPDATED_SHORT' | translate }} {{ date(item.updatedAt, false) }}</small
+                  >
+                </div>
+                <i class="pi pi-chevron-right row-arrow" aria-hidden="true"></i
+              ></a>
+            }
+          </div>
+          <nav class="pagination" [attr.aria-label]="'CARE.PAGINATION' | translate">
+            <p-button
+              icon="pi pi-chevron-left"
+              [ariaLabel]="'CARE.PREVIOUS' | translate"
+              [disabled]="page() <= 1"
+              [text]="true"
+              (onClick)="changePage(page() - 1)"
+            /><span>{{ 'CARE.PAGE' | translate }} {{ page() }} / {{ totalPages() }}</span
+            ><p-button
+              icon="pi pi-chevron-right"
+              [ariaLabel]="'CARE.NEXT' | translate"
+              [disabled]="page() >= totalPages()"
+              [text]="true"
+              (onClick)="changePage(page() + 1)"
+            />
+          </nav>
+        }
+      }
+
+      @if (view === 'request') {
+        @if (state() === 'loading' || store.loading()) {
+          <div class="content-panel" aria-busy="true">
+            <p role="status">{{ 'CARE.LOADING' | translate }}</p>
+            <p-skeleton height="12rem" />
+          </div>
+        } @else if (request(); as item) {
+          <a
+            class="back-link"
+            [routerLink]="staff ? basePath + '/inbox' : basePath + '/requests'"
+            ><i class="pi pi-arrow-left" aria-hidden="true"></i
+            >{{ 'CARE.BACK_REQUESTS' | translate }}</a
+          >
+          <header class="page-heading">
+            <div>
+              <h1 tabindex="-1">{{ 'CARE.REQUEST_DETAIL' | translate }}</h1>
+              <p>
+                {{ item.id }}<span class="dot-divider">·</span>{{ 'CARE.VERSION' | translate }}
+                {{ item.version }}
+              </p>
+            </div>
+            <span [class]="'status-badge status-' + item.status.toLowerCase()">{{
+              statusKey(item.status) | translate
+            }}</span>
+          </header>
+          @if (route.snapshot.queryParamMap.get('sent')) {
+            <div class="success-banner" role="status">
+              <i class="pi pi-check-circle" aria-hidden="true"></i
+              >{{ 'CARE.SENT_SUCCESS' | translate }}
+            </div>
+          }
+          @if (state() === 'conflict') {
+            <div class="error-banner" role="alert">
+              <strong>{{ 'CARE.CONFLICT_TITLE' | translate }}</strong>
+              <p>{{ 'CARE.CONFLICT_DESC' | translate }}</p>
+              <p-button
+                [label]="'CARE.LOAD_LATEST' | translate"
+                [ariaLabel]="'CARE.LOAD_LATEST' | translate"
+                (onClick)="changeState('ready')"
+              />
+            </div>
+          }
+          <div class="detail-layout">
+            <div class="detail-content">
+              @if (item.status === 'SCHEDULE_PROPOSED') {
+                <section class="proposal-panel">
+                  <div>
+                    <i class="pi pi-calendar" aria-hidden="true"></i>
+                    <h2>{{ 'CARE.FACILITY_PROPOSES' | translate }}</h2>
+                  </div>
+                  <strong class="proposal-time">{{ date(item.proposedTime) }}</strong>
+                  <p>{{ 'CARE.TIMEZONE' | translate }}</p>
+                  <p>{{ message(item.history[item.history.length - 1].message) }}</p>
+                  @if (!staff) {
+                    <p-button
+                      [label]="'CARE.ACTION.ACCEPT_SCHEDULE' | translate"
+                      [ariaLabel]="'CARE.ACTION.ACCEPT_SCHEDULE' | translate"
+                      icon="pi pi-check"
+                      styleClass="care-primary"
+                      [disabled]="state() === 'conflict' || !canAcceptSchedule(item)"
+                      (onClick)="openAction('ACCEPT_SCHEDULE', item)"
+                    /><a
+                      class="text-link"
+                      [routerLink]="[basePath + '/facilities', item.facilityId]"
+                      fragment="facility-contact"
+                      >{{ 'CARE.CONTACT_AGAIN' | translate }}</a
+                    >
+                    <p class="field-help">{{ (canAcceptSchedule(item) ? 'CARE.CONTACT_AGAIN_HELP' : 'CARE.EXPIRED_PROPOSAL') | translate }}</p>
+                  }
+                </section>
+              }
+              @if (item.status === 'CONFIRMED') {
+                <section class="proposal-panel">
+                  <h2>{{ 'CARE.CONFIRMED_TIME' | translate }}</h2>
+                  <strong class="proposal-time">{{ date(item.confirmedTime) }}</strong>
+                  <p>{{ 'CARE.TIMEZONE' | translate }}</p>
+                  <p>{{ 'CARE.CONFIRMED_NOTE' | translate }}</p>
+                </section>
+              }
+              <section class="content-panel">
+                <h2>{{ 'CARE.SUBMITTED_INFO' | translate }}</h2>
+                <dl class="review-list">
+                  <dt>{{ 'CARE.FACILITY_LABEL' | translate }}</dt>
+                  <dd>{{ facilityNameById(item.facilityId) }}</dd>
+                  <dt>{{ 'CARE.PROFILE_LABEL' | translate }}</dt>
+                  <dd>{{ item.profileLabel || profileName(item.profile) }}</dd>
+                  <dt>{{ 'CARE.SERVICE_LABEL' | translate }}</dt>
+                  <dd>{{ item.serviceLabel || ('CARE.SERVICE.' + item.serviceId | translate) }}</dd>
+                  <dt>{{ 'CARE.PREFERRED_TIME' | translate }}</dt>
+                  <dd>{{ date(item.preferredTime) }}</dd>
+                  <dt>{{ 'CARE.NEEDS_LABEL' | translate }}</dt>
+                  <dd class="preserve-text">{{ message(item.needs) }}</dd>
+                  <dt>{{ 'CARE.CONTACT_SECTION' | translate }}</dt>
+                  <dd>{{ item.contactName }}<br />{{ item.phone }}</dd>
+                  @if (item.note) {
+                    <dt>{{ 'CARE.NOTE' | translate }}</dt>
+                    <dd class="preserve-text">{{ item.note }}</dd>
+                  }
+                  <dt>{{ 'CARE.CONSENT_RECORDED' | translate }}</dt>
+                  <dd>
+                    {{ date(item.consentAt)
+                    }}<small class="block muted">{{ 'CARE.CONSENT_VERSION' | translate }}</small>
+                  </dd>
+                </dl>
+              </section>
+              <section class="content-panel">
+                <h2>{{ 'CARE.HISTORY_TITLE' | translate }}</h2>
+                <ol class="request-timeline">
+                  @for (event of item.history; track $index) {
+                    <li>
+                      <span class="timeline-dot"
+                        ><i class="pi pi-check" aria-hidden="true"></i
+                      ></span>
+                      <div>
+                        <strong>{{ statusKey(event.status) | translate }}</strong>
+                        <p>
+                          {{ 'CARE.ACTOR.' + event.actor | translate
+                          }}<span class="dot-divider">·</span>{{ date(event.at) }}
+                        </p>
+                        @if (event.scheduledTime) {
+                          <p class="timeline-message">{{ 'CARE.HISTORY_SCHEDULE' | translate }} {{ date(event.scheduledTime) }} · {{ 'CARE.TIMEZONE_SHORT' | translate }}</p>
+                        }
+                        @if (event.message) {
+                          <p class="timeline-message">{{ message(event.message) }}</p>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ol>
+              </section>
+              @if (item.status === 'COMPLETED' && !staff) {
+                <section class="content-panel">
+                  <h2>{{ 'CARE.FEEDBACK.FORM_TITLE' | translate }}</h2>
+                  @if (requestHasFeedback(item.id)) {
+                    <p class="muted">{{ 'CARE.FEEDBACK.ALREADY_SUBMITTED' | translate }}</p>
+                  } @else {
+                    <p class="field-help">{{ 'CARE.FEEDBACK.FORM_HELP' | translate }}</p>
+                    <div class="field">
+                      <label>{{ 'CARE.FEEDBACK.RATING_LABEL' | translate }}</label>
+                      <div class="rating-row" role="radiogroup" [attr.aria-label]="'CARE.FEEDBACK.RATING_LABEL' | translate">
+                        @for (star of [1, 2, 3, 4, 5]; track star) {
+                          <button
+                            type="button"
+                            class="slot-chip"
+                            [class.slot-chip-selected]="feedbackRating() === star"
+                            (click)="feedbackRating.set(star)"
+                          >
+                            {{ star }} ★
+                          </button>
+                        }
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>{{ 'CARE.FEEDBACK.TAGS_LABEL' | translate }}</label>
+                      <div class="slot-grid">
+                        @for (tag of feedbackTagOptions; track tag) {
+                          <button
+                            type="button"
+                            class="slot-chip"
+                            [class.slot-chip-selected]="feedbackTags().includes(tag)"
+                            (click)="toggleFeedbackTag(tag)"
+                          >
+                            {{ 'CARE.FEEDBACK.TAG_' + tag | translate }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="fb-comment">{{ 'CARE.FEEDBACK.COMMENT_LABEL' | translate }}</label>
+                      <textarea
+                        id="fb-comment"
+                        rows="3"
+                        maxlength="500"
+                        [ngModel]="feedbackComment()"
+                        (ngModelChange)="feedbackComment.set($event)"
+                      ></textarea>
+                    </div>
+                    <p-button
+                      [label]="'CARE.FEEDBACK.SUBMIT_BTN' | translate"
+                      [ariaLabel]="'CARE.FEEDBACK.SUBMIT_BTN' | translate"
+                      icon="pi pi-send"
+                      styleClass="care-primary"
+                      (onClick)="submitRequestFeedback(item.id)"
+                    />
+                  }
+                </section>
+              }
+            </div>
+            <aside class="detail-aside">
+              <section class="content-panel action-panel">
+                <h2>{{ (staff ? 'CARE.PROCESSING' : 'CARE.NEXT_ACTION') | translate }}</h2>
+                <p>{{ statusHelpKey(item.status) | translate }}</p>
+                @for (action of actions(item); track action) {
+                  @if (action !== 'ACCEPT_SCHEDULE') {
+                    <p-button
+                      [label]="'CARE.ACTION.' + action | translate"
+                      [ariaLabel]="'CARE.ACTION.' + action | translate"
+                      [outlined]="action === 'CANCEL' || action === 'DECLINE'"
+                      [severity]="
+                        action === 'CANCEL' || action === 'DECLINE' ? 'secondary' : 'success'
+                      "
+                      [styleClass]="action === 'CANCEL' || action === 'DECLINE' ? '' : 'care-primary'"
+                      [disabled]="state() === 'conflict'"
+                      (onClick)="openAction(action, item)"
+                    />
+                  }
+                }
+                @if (!actions(item).length && !staff) {
+                  <a class="outline-link" [routerLink]="basePath"
+                    >{{ 'CARE.NEW_REQUEST' | translate
+                    }}<i class="pi pi-arrow-right" aria-hidden="true"></i
+                  ></a>
+                }
+              </section>
+              <div class="aside-note">
+                <i class="pi pi-lock" aria-hidden="true"></i>
+                <h3>{{ 'CARE.SHARING_TITLE' | translate }}</h3>
+                <p>{{ 'CARE.SHARING_DESC' | translate }}</p>
+              </div>
+            </aside>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <h1 tabindex="-1">{{ 'CARE.NOT_FOUND' | translate }}</h1>
+            <p>{{ 'CARE.NOT_FOUND_HELP' | translate }}</p>
+            <a class="primary-link" [routerLink]="basePath + '/requests'">{{
+              'CARE.MY_REQUESTS' | translate
+            }}</a>
+          </div>
+        }
+      }
+
+      @if (view === 'catalog') {
+        <header class="page-heading">
+          <div>
+            <h1 tabindex="-1">{{ 'CARE.CATALOG' | translate }}</h1>
+            <p>{{ 'CARE.CATALOG_SUBTITLE' | translate }}</p>
+          </div>
+          @if (store.fixture) {
+            <p-button
+              [label]="'CARE.ADD_FACILITY' | translate"
+              [ariaLabel]="'CARE.ADD_FACILITY' | translate"
+              icon="pi pi-plus"
+              styleClass="care-primary"
+              (onClick)="startCatalog()"
+            />
+          }
+        </header>
+        <div class="scope-note">
+          <i class="pi pi-lock" aria-hidden="true"></i
+          ><span>{{ 'CARE.CATALOG_SCOPE' | translate }}</span>
+        </div>
+        @if (state() === 'loading' || store.loading()) {
+          <div class="content-panel" aria-busy="true">
+            <p role="status">{{ 'CARE.LOADING' | translate }}</p>
+            <p-skeleton height="12rem" />
+          </div>
+        } @else {
+        <div class="catalog-list">
+          @for (item of store.facilities(); track item.id) {
+            <article class="catalog-row">
+              <span class="facility-symbol"><i class="pi pi-building" aria-hidden="true"></i></span>
+              <div class="catalog-identity">
+                <h2>{{ facilityName(item) }}</h2>
+                <p>
+                  {{ 'CARE.REGION.' + item.region | translate }}<span class="dot-divider">·</span
+                  >{{ item.services.length }} {{ 'CARE.SERVICE_COUNT' | translate }}
+                </p>
+              </div>
+              <span
+                [class]="
+                  'status-badge ' + (item.published ? 'status-confirmed' : 'status-cancelled')
+                "
+                >{{ (item.published ? 'CARE.PUBLISHED' : 'CARE.HIDDEN') | translate }}</span
+              ><p-button
+                [label]="'CARE.EDIT' | translate"
+                [ariaLabel]="'CARE.EDIT' | translate"
+                icon="pi pi-pencil"
+                [outlined]="true"
+                [disabled]="!store.fixture && !store.managerIds().includes(item.id)"
+                (onClick)="startCatalog(item)"
+              />
+            </article>
+          }
+        </div>
+        }
+        @if (pendingFeedbacks().length > 0) {
+          <section class="content-panel moderation-panel">
+            <h2>{{ 'CARE.FEEDBACK.MODERATION_TITLE' | translate }}</h2>
+            <p class="field-help">{{ 'CARE.FEEDBACK.MODERATION_HELP' | translate }}</p>
+            @for (fb of pendingFeedbacks(); track fb.id) {
+              <article class="catalog-row">
+                <div class="catalog-identity">
+                  <strong>{{ facilityNameById(fb.facilityId) }} · {{ fb.rating }} / 5 ★</strong>
+                  <p>{{ fb.comment }}</p>
+                </div>
+                <p-button
+                  [label]="'CARE.FEEDBACK.APPROVE' | translate"
+                  [ariaLabel]="'CARE.FEEDBACK.APPROVE' | translate"
+                  icon="pi pi-check"
+                  styleClass="care-primary"
+                  (onClick)="moderateFacilityFeedback(fb.id, 'approved')"
+                />
+                <p-button
+                  [label]="'CARE.FEEDBACK.REJECT' | translate"
+                  [ariaLabel]="'CARE.FEEDBACK.REJECT' | translate"
+                  icon="pi pi-times"
+                  [outlined]="true"
+                  (onClick)="moderateFacilityFeedback(fb.id, 'rejected')"
+                />
+              </article>
+            }
+          </section>
+        }
+      }
+      @if (store.fixture) {
+        <footer class="design-tools">
+          <span>{{ 'CARE.DESIGN_PREVIEW' | translate }}</span>
+          @if (['facilities', 'requests', 'inbox', 'request'].includes(view)) {
+            <label for="preview-state">{{ 'CARE.PREVIEW_STATE' | translate }}</label>
+            <p-select
+              inputId="preview-state"
+              [ariaLabel]="'CARE.PREVIEW_STATE' | translate"
+              [options]="stateOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [ngModel]="state()"
+              (ngModelChange)="changeState($event)"
+            />
+          }
+        </footer>
+      }
+    </div>
+  </main>
+</div>
+
+<p-dialog
+  [(visible)]="actionOpen"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="'CARE.ACTION.' + currentAction | translate"
+  styleClass="care-dialog"
+  maskStyleClass="care-dialog-mask"
+  [style]="{ width: '34rem', maxWidth: 'calc(100vw - 2rem)' }"
+>
+  <p>{{ 'CARE.ACTION_HELP.' + currentAction | translate }}</p>
+  @if (request(); as item) {
+    @if (currentAction === 'ACCEPT_SCHEDULE' || currentAction === 'CONFIRM_PREFERRED') {
+      <div class="dialog-schedule">
+        <i class="pi pi-calendar" aria-hidden="true"></i
+        ><strong>{{
+          date(currentAction === 'ACCEPT_SCHEDULE' ? item.proposedTime : item.preferredTime)
+        }}</strong
+        ><small>{{ 'CARE.TIMEZONE' | translate }}</small>
+      </div>
+    }
+  }
+  @if (currentAction === 'PROPOSE_SCHEDULE') {
+    <div class="field">
+      <label for="proposal-time">{{ 'CARE.PROPOSED_TIME' | translate }} *</label
+      ><input
+        id="proposal-time"
+        type="datetime-local"
+        pInputText
+        [(ngModel)]="actionTime"
+        [min]="minimumDate"
+      /><small>{{ 'CARE.TIMEZONE' | translate }}</small>
+    </div>
+  }
+  @if (hasReason()) {
+    <div class="field">
+      <label for="action-message"
+        >{{
+          (currentAction === 'PROPOSE_SCHEDULE' ? 'CARE.MESSAGE_LABEL' : 'CARE.REASON_LABEL')
+            | translate
+        }}
+        *</label
+      ><textarea
+        id="action-message"
+        [(ngModel)]="actionMessage"
+        rows="3"
+        maxlength="1000"
+      ></textarea>
+    </div>
+  }
+  @if (actionError) {
+    <p class="field-error" role="alert">{{ 'CARE.ERROR.' + actionError | translate }}</p>
+    @if (actionError === 'CONFLICT') {
+      <p-button
+        [label]="'CARE.LOAD_LATEST' | translate"
+        [ariaLabel]="'CARE.LOAD_LATEST' | translate"
+        (onClick)="actionOpen = false; changeState('ready')"
+      />
+    }
+  }
+  <ng-template #footer
+    ><p-button
+      [label]="'CARE.CLOSE' | translate"
+      [ariaLabel]="'CARE.CLOSE' | translate"
+      [text]="true"
+      (onClick)="actionOpen = false" /><p-button
+      [label]="'CARE.ACTION.' + currentAction | translate"
+      [ariaLabel]="'CARE.ACTION.' + currentAction | translate"
+      [disabled]="actionError === 'CONFLICT'"
+      styleClass="care-primary"
+      (onClick)="confirmAction()"
+  /></ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="catalogOpen"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="'CARE.EDIT_FACILITY' | translate"
+  styleClass="care-dialog"
+  maskStyleClass="care-dialog-mask"
+  [style]="{ width: '44rem', maxWidth: 'calc(100vw - 2rem)' }"
+>
+  <div class="field">
+    <label for="edit-name">{{ 'CARE.FACILITY_LABEL' | translate }} *</label
+    ><input id="edit-name" pInputText [(ngModel)]="editingFacility.customName" maxlength="150" />
+  </div>
+  <div class="two-fields">
+    <div class="field">
+      <label for="edit-region">{{ 'CARE.REGION_LABEL' | translate }}</label
+      ><p-select
+        inputId="edit-region"
+        [ariaLabel]="'CARE.REGION_LABEL' | translate"
+        [options]="regionOptions().slice(1)"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="editingFacility.region"
+        appendTo="body"
+      />
+    </div>
+    <div class="field">
+      <label for="edit-type">{{ 'CARE.TYPE_LABEL' | translate }}</label
+      ><p-select
+        inputId="edit-type"
+        [ariaLabel]="'CARE.TYPE_LABEL' | translate"
+        [options]="typeOptions().slice(1)"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="editingFacility.type"
+        appendTo="body"
+      />
+    </div>
+  </div>
+  <div class="field">
+    <label for="edit-address">{{ 'CARE.ADDRESS_LABEL' | translate }} *</label
+    ><input
+      id="edit-address"
+      pInputText
+      [(ngModel)]="editingFacility.customAddress"
+      maxlength="300"
+    />
+  </div>
+  <div class="field">
+    <label for="edit-description">{{ 'CARE.ABOUT' | translate }} *</label
+    ><textarea
+      id="edit-description"
+      [(ngModel)]="editingFacility.customDescription"
+      rows="3"
+      maxlength="2000"
+    ></textarea>
+  </div>
+  <div class="field">
+    <label for="edit-contact">{{ 'CARE.PHONE' | translate }}</label
+    ><input id="edit-contact" pInputText [(ngModel)]="editingFacility.contact" maxlength="30" />
+  </div>
+  <h3>{{ 'CARE.SERVICES_TITLE' | translate }}</h3>
+  @if (catalogNew && editingFacility.services.length === 1) {
+    <div class="field">
+      <label for="initial-service">{{ 'CARE.SERVICE_LABEL' | translate }}</label>
+      <p-select appendTo="body" inputId="initial-service" [ariaLabel]="'CARE.SERVICE_LABEL' | translate" [options]="serviceOptions().slice(1)" optionLabel="label" optionValue="value" [ngModel]="editingFacility.services[0].id" (ngModelChange)="changeInitialService($event)" />
+    </div>
+  }
+  <p class="field-help">{{ 'CARE.PRICE_EMPTY_HELP' | translate }}</p>
+  @for (service of editingFacility.services; track service.id) {
+    <div class="catalog-service">
+      <strong>{{ 'CARE.SERVICE.' + service.id | translate }}</strong>
+      <div class="field">
+        <label [for]="'price-' + service.id"
+          >{{ 'CARE.PRICE_VND' | translate }} / {{ 'CARE.UNIT.' + service.unit | translate }}</label
+        ><input
+          [id]="'price-' + service.id"
+          type="number"
+          pInputText
+          [(ngModel)]="service.price"
+          min="0"
+        />
+      </div>
+      <label class="checkbox-label"
+        ><input type="checkbox" [(ngModel)]="service.accepting" />{{
+          'CARE.ACCEPT_SERVICE' | translate
+        }}</label
+      >
+    </div>
+  }
+  <p-button
+    [label]="'CARE.ADD_SERVICE' | translate"
+    [ariaLabel]="'CARE.ADD_SERVICE' | translate"
+    icon="pi pi-plus"
+    [text]="true"
+    [disabled]="editingFacility.services.length >= 3"
+    (onClick)="addService()"
+  /><label class="consent-label"
+    ><input type="checkbox" [(ngModel)]="editingFacility.published" /><span>{{
+      'CARE.PUBLISH_FACILITY' | translate
+    }}</span></label
+  >
+  <p class="field-help">{{ 'CARE.UNPUBLISH_NOTE' | translate }}</p>
+  @if (catalogError) {
+    <p class="field-error" role="alert">{{ 'CARE.ERROR.' + catalogError | translate }}</p>
+  }
+  <ng-template #footer
+    ><p-button
+      [label]="'CARE.CLOSE' | translate"
+      [ariaLabel]="'CARE.CLOSE' | translate"
+      [text]="true"
+      (onClick)="catalogOpen = false" /><p-button
+      [label]="'CARE.SAVE' | translate"
+      [ariaLabel]="'CARE.SAVE' | translate"
+      icon="pi pi-check"
+      styleClass="care-primary"
+      (onClick)="saveCatalog()"
+  /></ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="recommendOpen"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="'CARE.RECOMMEND.TITLE' | translate"
+  styleClass="care-dialog"
+  maskStyleClass="care-dialog-mask"
+  [style]="{ width: '48rem', maxWidth: 'calc(100vw - 2rem)' }"
+>
+  <div class="scope-note">
+    <i class="pi pi-info-circle" aria-hidden="true"></i>
+    <span>{{ 'CARE.RECOMMEND.DISCLAIMER' | translate }}</span>
+  </div>
+  <div class="two-fields">
+    <div class="field">
+      <label for="rec-region">{{ 'CARE.REGION_LABEL' | translate }}</label>
+      <p-select
+        inputId="rec-region"
+        [ariaLabel]="'CARE.REGION_LABEL' | translate"
+        [options]="regionOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="recCriteria.region"
+        (ngModelChange)="runRecommend()"
+        appendTo="body"
+      />
+    </div>
+    <div class="field">
+      <label for="rec-service">{{ 'CARE.SERVICE_LABEL' | translate }}</label>
+      <p-select
+        inputId="rec-service"
+        [ariaLabel]="'CARE.SERVICE_LABEL' | translate"
+        [options]="serviceOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="recCriteria.serviceId"
+        (ngModelChange)="runRecommend()"
+        appendTo="body"
+      />
+    </div>
+  </div>
+  <div class="two-fields">
+    <div class="field">
+      <label for="rec-support">{{ 'CARE.RECOMMEND.SUPPORT_LEVEL_LABEL' | translate }}</label>
+      <p-select
+        inputId="rec-support"
+        [ariaLabel]="'CARE.RECOMMEND.SUPPORT_LEVEL_LABEL' | translate"
+        [options]="supportLevelOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="recCriteria.supportLevel"
+        (ngModelChange)="runRecommend()"
+        appendTo="body"
+      />
+    </div>
+    <div class="field">
+      <label for="rec-budget">{{ 'CARE.RECOMMEND.BUDGET_LABEL' | translate }}</label>
+      <input
+        id="rec-budget"
+        type="number"
+        pInputText
+        [(ngModel)]="recCriteria.budgetMaxVnd"
+        (ngModelChange)="runRecommend()"
+        min="0"
+        step="500000"
+      />
+    </div>
+  </div>
+  <div class="field">
+    <label>{{ 'CARE.RECOMMEND.PRIORITY_TAGS_LABEL' | translate }}</label>
+    <div class="slot-grid">
+      @for (tag of priorityTagOptions; track tag) {
+        <button
+          type="button"
+          class="slot-chip"
+          [class.slot-chip-selected]="recCriteria.priorityTags.includes(tag)"
+          (click)="togglePriorityTag(tag)"
+        >
+          {{ 'CARE.AMENITY.' + tag | translate }}
+        </button>
+      }
+    </div>
+  </div>
+  <div class="recommend-results">
+    @for (rec of store.recommendations(); track rec.facilityId) {
+      <article class="recommend-card">
+        <div class="recommend-card-head">
+          <div>
+            <strong>{{ facilityNameById(rec.facilityId) }}</strong>
+            <span class="status-badge status-confirmed">{{ rec.score }} / 100</span>
+          </div>
+          <a
+            class="outline-link"
+            [routerLink]="[basePath + '/facilities', rec.facilityId]"
+            (click)="recommendOpen = false"
+          >
+            {{ 'CARE.VIEW_DETAIL' | translate }}
+          </a>
+        </div>
+        <div class="service-tags">
+          @for (reason of rec.reasons; track reason.code) {
+            <span>{{ reason.code.startsWith('REMOTE_') ? reason.matchedValue : ('CARE.RECOMMEND.REASON_' + reason.code | translate) }}</span>
+          }
+        </div>
+        @if (rec.missingDescriptions?.length) { <p class="rec-missing">{{ rec.missingDescriptions?.join('; ') }}</p> }
+        @if (rec.missing.length > 0) {
+          <p class="field-help">
+            {{ 'CARE.RECOMMEND.MISSING_PREFIX' | translate }}:
+            @for (miss of rec.missing; track miss; let last = $last) {
+              {{ 'CARE.RECOMMEND.MISSING_' + miss | translate }}{{ last ? '' : ', ' }}
+            }
+          </p>
+        }
+      </article>
+    }
+  </div>
+  <ng-template #footer>
+    <p-button
+      [label]="'CARE.CLOSE' | translate"
+      [ariaLabel]="'CARE.CLOSE' | translate"
+      (onClick)="recommendOpen = false"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="compareOpen"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [header]="'CARE.COMPARE.TITLE' | translate"
+  styleClass="care-dialog"
+  maskStyleClass="care-dialog-mask"
+  [style]="{ width: '54rem', maxWidth: 'calc(100vw - 2rem)' }"
+>
+  <p class="field-help">{{ 'CARE.COMPARE.UNIT_GUARD_NOTE' | translate }}</p>
+  <div class="compare-table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>{{ 'CARE.FACILITY_LABEL' | translate }}</th>
+          @for (fac of store.comparedFacilities(); track fac.id) {
+            <th>{{ facilityName(fac) }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ 'CARE.REGION_LABEL' | translate }}</td>
+          @for (fac of store.comparedFacilities(); track fac.id) {
+            <td>{{ 'CARE.REGION.' + fac.region | translate }}</td>
+          }
+        </tr>
+        <tr>
+          <td>{{ 'CARE.TYPE_LABEL' | translate }}</td>
+          @for (fac of store.comparedFacilities(); track fac.id) {
+            <td>{{ 'CARE.TYPE.' + fac.type | translate }}</td>
+          }
+        </tr>
+        @for (svcId of compareServiceIds; track svcId) {
+          <tr>
+            <td>{{ 'CARE.SERVICE.' + svcId | translate }}</td>
+            @for (fac of store.comparedFacilities(); track fac.id) {
+              <td>
+                @if (serviceForFacility(fac, svcId); as svc) {
+                  {{ price(svc.price) }}
+                  @if (svc.price > 0) {
+                    / {{ 'CARE.UNIT.' + svc.unit | translate }}
+                  }
+                } @else {
+                  —
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <ng-template #footer>
+    <p-button
+      [label]="'CARE.COMPARE.CLEAR_BTN' | translate"
+      [ariaLabel]="'CARE.COMPARE.CLEAR_BTN' | translate"
+      [text]="true"
+      (onClick)="store.clearCompare(); compareOpen = false"
+    />
+    <p-button
+      [label]="'CARE.CLOSE' | translate"
+      [ariaLabel]="'CARE.CLOSE' | translate"
+      styleClass="care-primary"
+      (onClick)="compareOpen = false"
+    />
+  </ng-template>
+</p-dialog>

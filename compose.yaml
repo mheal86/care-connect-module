@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: care_demo
+      POSTGRES_PASSWORD: local-demo-db-only
+      POSTGRES_DB: care_connect_demo
+    ports:
+      - "127.0.0.1:5548:5432"
+    volumes:
+      - care_connect_pg:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/20-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U care_demo -d care_connect_demo"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  care_connect_pg:

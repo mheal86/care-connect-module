@@ -1,0 +1,14 @@
+[project]
+name = "care-connect-module"
+version = "1.0.0"
+description = "Module kết nối người cao tuổi với cơ sở chăm sóc sức khỏe và viện dưỡng lão"
+requires-python = ">=3.12"
+dependencies = ["fastapi==0.141.1", "uvicorn==0.52.4", "psycopg2-binary==2.9.12", "python-dotenv==1.2.3", "itsdangerous>=2.2,<3", "tzdata>=2025.2"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "httpx==0.28.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["."]
+markers = ["postgres: integration tests against a dedicated disposable PostgreSQL database"]

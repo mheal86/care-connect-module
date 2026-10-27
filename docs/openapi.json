@@ -1,0 +1,1639 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Care Connect module review",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/login": {
+      "post": {
+        "summary": "Login",
+        "operationId": "login_api_demo_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "logout_api_demo_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/demo/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "me_api_demo_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/me": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Get Care Me",
+        "operationId": "get_care_me_api_care_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareMeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/facilities": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "List Care Facilities",
+        "operationId": "list_care_facilities_api_care_facilities_get",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Level"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/facilities/{facility_id}": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Get Care Facility",
+        "operationId": "get_care_facility_api_care_facilities__facility_id__get",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/catalog/facilities/{facility_id}": {
+      "put": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Save Care Facility",
+        "description": "Save the catalogue for a managed facility, including publication and service flags.",
+        "operationId": "save_care_facility_api_care_catalog_facilities__facility_id__put",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareCatalogPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/facilities/{facility_id}/slots": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "List Facility Slots",
+        "operationId": "list_facility_slots_api_care_facilities__facility_id__slots_get",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Facility Id"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          },
+          {
+            "name": "consult_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Consult Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/recommendations": {
+      "post": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Recommend Care Facilities",
+        "operationId": "recommend_care_facilities_api_care_recommendations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRecommendRequestPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/requests": {
+      "post": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Create Care Request",
+        "operationId": "create_care_request_api_care_requests_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCareRequestPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "List Care Requests",
+        "operationId": "list_care_requests_api_care_requests_get",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "mine",
+              "title": "Scope"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facility Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/requests/{request_id}": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Get Care Request",
+        "operationId": "get_care_request_api_care_requests__request_id__get",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/requests/{request_id}/actions": {
+      "post": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Act On Care Request",
+        "operationId": "act_on_care_request_api_care_requests__request_id__actions_post",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRequestActionPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/requests/{request_id}/feedback": {
+      "post": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Submit Care Feedback",
+        "operationId": "submit_care_feedback_api_care_requests__request_id__feedback_post",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareFeedbackPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/facilities/{facility_id}/feedback": {
+      "get": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "List Care Facility Feedback",
+        "operationId": "list_care_facility_feedback_api_care_facilities__facility_id__feedback_get",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Facility Id"
+            }
+          },
+          {
+            "name": "include_unapproved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Unapproved"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/feedback/{feedback_id}/moderation": {
+      "patch": {
+        "tags": [
+          "Care Connect"
+        ],
+        "summary": "Moderate Care Feedback",
+        "operationId": "moderate_care_feedback_api_care_feedback__feedback_id__moderation_patch",
+        "parameters": [
+          {
+            "name": "feedback_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Feedback Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareFeedbackModerationPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/extensions": {
+      "get": {
+        "summary": "Overview",
+        "operationId": "overview_api_care_extensions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/trial-alerts": {
+      "post": {
+        "summary": "Create Alert",
+        "operationId": "create_alert_api_care_trial_alerts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrialAlertPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/trial-alerts/{alert_id}/{action}": {
+      "post": {
+        "summary": "Act Alert",
+        "operationId": "act_alert_api_care_trial_alerts__alert_id___action__post",
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Alert Id"
+            }
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "acknowledge",
+                "cancel"
+              ],
+              "type": "string",
+              "title": "Action"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/profile-grants": {
+      "post": {
+        "summary": "Grant",
+        "operationId": "grant_api_care_profile_grants_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileGrantPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/profile-grants/{grant_id}/revoke": {
+      "post": {
+        "summary": "Revoke",
+        "operationId": "revoke_api_care_profile_grants__grant_id__revoke_post",
+        "parameters": [
+          {
+            "name": "grant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Grant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/care/profile-grants/{grant_id}/shared-profile": {
+      "get": {
+        "summary": "Shared",
+        "operationId": "shared_api_care_profile_grants__grant_id__shared_profile_get",
+        "parameters": [
+          {
+            "name": "grant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Grant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CareCatalogPayload": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "facility_type": {
+            "type": "string",
+            "enum": [
+              "nursing_home",
+              "day_care",
+              "rehab",
+              "home_care"
+            ],
+            "title": "Facility Type"
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "hcm",
+              "hanoi",
+              "danang"
+            ],
+            "title": "Region"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Address"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 3000,
+            "minLength": 5,
+            "title": "Description"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Phone",
+            "default": ""
+          },
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "amenities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Amenities"
+          },
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/CareCatalogServicePayload"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Services"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "facility_type",
+          "region",
+          "address",
+          "description",
+          "published",
+          "services"
+        ],
+        "title": "CareCatalogPayload",
+        "description": "Validated catalogue input; verification flags are never supplied by clients."
+      },
+      "CareCatalogServicePayload": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "stay",
+              "day",
+              "rehab",
+              "medical"
+            ],
+            "title": "Category"
+          },
+          "price": {
+            "type": "integer",
+            "maximum": 2000000000.0,
+            "minimum": 0.0,
+            "title": "Price"
+          },
+          "price_unit": {
+            "type": "string",
+            "enum": [
+              "month",
+              "day",
+              "session"
+            ],
+            "title": "Price Unit"
+          },
+          "ui_id": {
+            "type": "string",
+            "enum": [
+              "longstay",
+              "daycare",
+              "rehab"
+            ],
+            "title": "Ui Id"
+          },
+          "accepting": {
+            "type": "boolean",
+            "title": "Accepting",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "price",
+          "price_unit",
+          "ui_id"
+        ],
+        "title": "CareCatalogServicePayload",
+        "description": "Public service details editable by a facility manager."
+      },
+      "CareFeedbackModerationPayload": {
+        "properties": {
+          "moderationStatus": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected",
+              "pending"
+            ],
+            "title": "Moderationstatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "moderationStatus"
+        ],
+        "title": "CareFeedbackModerationPayload"
+      },
+      "CareFeedbackPayload": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "comment": {
+            "type": "string",
+            "title": "Comment",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating"
+        ],
+        "title": "CareFeedbackPayload"
+      },
+      "CareMeResponse": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "account_role": {
+            "type": "string",
+            "title": "Account Role"
+          },
+          "accountRole": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountrole"
+          },
+          "member_facilities": {
+            "items": {
+              "$ref": "#/components/schemas/CareMemberFacilityOut"
+            },
+            "type": "array",
+            "title": "Member Facilities"
+          },
+          "memberFacilities": {
+            "items": {
+              "$ref": "#/components/schemas/CareMemberFacilityOut"
+            },
+            "type": "array",
+            "title": "Memberfacilities"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "username",
+          "account_role"
+        ],
+        "title": "CareMeResponse"
+      },
+      "CareMemberFacilityOut": {
+        "properties": {
+          "facility_id": {
+            "type": "string",
+            "title": "Facility Id"
+          },
+          "facilityId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facilityid"
+          },
+          "member_role": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "manager"
+            ],
+            "title": "Member Role",
+            "default": "staff"
+          },
+          "memberRole": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memberrole"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "facility_id"
+        ],
+        "title": "CareMemberFacilityOut"
+      },
+      "CareRecommendRequestPayload": {
+        "properties": {
+          "careLevel": {
+            "type": "string",
+            "enum": [
+              "L1",
+              "L2",
+              "L3"
+            ],
+            "title": "Carelevel",
+            "default": "L1"
+          },
+          "preferredRegion": {
+            "type": "string",
+            "title": "Preferredregion",
+            "default": ""
+          },
+          "serviceType": {
+            "type": "string",
+            "title": "Servicetype",
+            "default": ""
+          },
+          "requiredTags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requiredtags"
+          },
+          "preferredDistrict": {
+            "type": "string",
+            "title": "Preferreddistrict",
+            "default": ""
+          },
+          "maxDistanceKm": {
+            "type": "number",
+            "title": "Maxdistancekm",
+            "default": 0.0
+          },
+          "budgetMax": {
+            "type": "integer",
+            "title": "Budgetmax",
+            "default": 0
+          },
+          "budgetUnit": {
+            "type": "string",
+            "enum": [
+              "month",
+              "day",
+              "session",
+              "contact"
+            ],
+            "title": "Budgetunit",
+            "default": "month"
+          },
+          "preferredType": {
+            "type": "string",
+            "title": "Preferredtype",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "CareRecommendRequestPayload"
+      },
+      "CareRequestActionPayload": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "start_review",
+              "staff_cancel",
+              "confirm",
+              "propose_slot",
+              "reject",
+              "complete",
+              "accept_slot",
+              "cancel"
+            ],
+            "title": "Action"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "title": "Expectedversion"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "proposedSlot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposedslot"
+          },
+          "slotId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slotid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "expectedVersion"
+        ],
+        "title": "CareRequestActionPayload"
+      },
+      "CreateCareRequestPayload": {
+        "properties": {
+          "consent": {
+            "type": "boolean",
+            "title": "Consent",
+            "default": false
+          },
+          "profileId": {
+            "type": "string",
+            "title": "Profileid",
+            "default": "elder-1"
+          },
+          "profileName": {
+            "type": "string",
+            "title": "Profilename",
+            "default": "Người cao tuổi"
+          },
+          "profileAge": {
+            "type": "integer",
+            "title": "Profileage",
+            "default": 70
+          },
+          "careLevel": {
+            "type": "string",
+            "enum": [
+              "L1",
+              "L2",
+              "L3"
+            ],
+            "title": "Carelevel",
+            "default": "L1"
+          },
+          "careNeeds": {
+            "type": "string",
+            "title": "Careneeds",
+            "default": ""
+          },
+          "facilityId": {
+            "type": "string",
+            "title": "Facilityid"
+          },
+          "serviceId": {
+            "type": "string",
+            "title": "Serviceid"
+          },
+          "consultType": {
+            "type": "string",
+            "enum": [
+              "visit",
+              "phone",
+              "video"
+            ],
+            "title": "Consulttype",
+            "default": "visit"
+          },
+          "preferredSlot": {
+            "type": "string",
+            "title": "Preferredslot"
+          },
+          "slotId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slotid"
+          },
+          "contactName": {
+            "type": "string",
+            "title": "Contactname"
+          },
+          "contactPhone": {
+            "type": "string",
+            "title": "Contactphone"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "reminderOptIn": {
+            "type": "boolean",
+            "title": "Reminderoptin",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "facilityId",
+          "serviceId",
+          "preferredSlot",
+          "contactName",
+          "contactPhone"
+        ],
+        "title": "CreateCareRequestPayload"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginPayload": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginPayload"
+      },
+      "ProfileGrantPayload": {
+        "properties": {
+          "profileId": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Profileid"
+          },
+          "facilityId": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Facilityid"
+          },
+          "fields": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "supportNeeds",
+                "contact",
+                "dailyRoutine"
+              ]
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Fields"
+          },
+          "consent": {
+            "type": "boolean",
+            "title": "Consent",
+            "default": false
+          },
+          "days": {
+            "type": "integer",
+            "maximum": 90.0,
+            "minimum": 1.0,
+            "title": "Days",
+            "default": 7
+          }
+        },
+        "type": "object",
+        "required": [
+          "profileId",
+          "facilityId",
+          "fields"
+        ],
+        "title": "ProfileGrantPayload"
+      },
+      "TrialAlertPayload": {
+        "properties": {
+          "profileId": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Profileid"
+          },
+          "clientEventId": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Clienteventid"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "simulator"
+            ],
+            "title": "Source"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 5,
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profileId",
+          "clientEventId",
+          "source",
+          "note"
+        ],
+        "title": "TrialAlertPayload"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
